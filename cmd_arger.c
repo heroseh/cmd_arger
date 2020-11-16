@@ -8,37 +8,33 @@ CmdArgerDesc cmd_arger_desc_flag(CmdArgerBool* value_out, char* name, char* info
 	};
 }
 
-CmdArgerDesc cmd_arger_desc_string(char** string_out, char* name, char* info) {
+CmdArgerDesc cmd_arger_desc_string(char** value_out, char* name, char* info) {
 	return (CmdArgerDesc) {
 		.name = name,
 		.info = info,
-		.value_out = string_out,
+		.value_out = value_out,
 		.kind = CmdArgerDescKind_string,
 	};
 }
 
-CmdArgerDesc cmd_arger_desc_integer(int64_t* integer_out, char* name, char* info) {
+CmdArgerDesc cmd_arger_desc_integer(int64_t* value_out, char* name, char* info) {
 	return (CmdArgerDesc) {
 		.name = name,
 		.info = info,
-		.value_out = integer_out,
+		.value_out = value_out,
 		.kind = CmdArgerDescKind_integer,
 	};
 }
 
-void cmd_arger_parse(CmdArgerDesc* optional_args, uint32_t optional_args_count, CmdArgerDesc* required_args, uint32_t required_args_count, int argc, char** argv, char* app_name_and_version) {
-	// the first arg is the name of the program
+void cmd_arger_parse(CmdArgerDesc* optional_args, uint32_t optional_args_count, CmdArgerDesc* required_args, uint32_t required_args_count, int argc, char** argv, char* app_name_and_version, CmdArgerBool colors) {
+	// argument index 0 (the first argument) is the name of the program.
+	// so we are going to start after that.
 	int arg_idx = 1;
-
-	//
-	// print help if we dont have enough of the required args
-	// less than or equal because the first arg is the name of the program and not an argument
-	if (argc <= required_args_count) {
-		goto PRINT_HELP_REQUIRED_ARGS;
-	}
 
 	int required_args_idx = 0;
 
+	//
+	// iterate over the arguments and parse them one by one.
 	while (arg_idx < argc) {
 		char* name_or_value = argv[arg_idx];
 		uint32_t name_or_value_len = strlen(name_or_value);
@@ -46,18 +42,19 @@ void cmd_arger_parse(CmdArgerDesc* optional_args, uint32_t optional_args_count, 
 		CmdArgerDesc* desc = NULL;
 		CmdArgerBool is_optional_arg = name_or_value_len > 2 && name_or_value[0] == '-' && name_or_value[1] == '-';
 		if (is_optional_arg) {
-			// true when we still require an argument and there is not enough room for them all
-			CmdArgerBool should_be_required_arg = argc - arg_idx <= required_args_count - required_args_idx;
-			if (should_be_required_arg) { goto PRINT_HELP_REQUIRED_ARGS; }
-
+			//
 			// move after the --
 			name_or_value += 2;
 			name_or_value_len -= 2;
 
-			if (name_or_value_len == 4 && memcmp(name_or_value, "help", 4) == 0) {
+			//
+			// if we find --help, then just ignore everything, print the help message and exist the program
+			static char help_name[] = "help";
+			if (name_or_value_len == 4 && memcmp(name_or_value, help_name, sizeof(help_name)) == 0) {
 				goto PRINT_HELP;
 			}
 
+			//
 			// locate the argument description that matches this name
 			for (int i = 0; i < optional_args_count; i += 1) {
 				CmdArgerDesc* arg = &optional_args[i];
@@ -67,23 +64,48 @@ void cmd_arger_parse(CmdArgerDesc* optional_args, uint32_t optional_args_count, 
 				}
 			}
 
+			//
+			// stop if we do not have an argument description that matches the name
 			if (desc == NULL) {
-				printf("error: unsupported argument '%.*s'\n\n", (int)name_or_value_len, name_or_value);
+				const char* fmt = colors
+					? "\x1b[91merror:\x1b[0m unsupported optional argument '--%.*s'\n\n"
+					: "error: unsupported optional argument '--%.*s'\n\n";
+				printf(fmt, (int)name_or_value_len, name_or_value);
 				goto PRINT_HELP;
 			}
 		} else {
+			//
+			// we have a required argument
+			//
+
+			//
+			// stop if we have too many required arguments passed in
 			if (required_args_idx >= required_args_count) {
-				printf("error: all required arguments have already been met\n\n");
+				const char* fmt = colors
+					? "\x1b[91merror:\x1b[0m more than %u required arguments have been provided\n\n"
+					: "error: more than %u required arguments have been provided\n\n";
+				printf(fmt, required_args_count);
 				goto PRINT_HELP;
 			}
 
-			// get the argument description based on how far from the end we are
+			//
+			// get the argument description based on how many requirements have already been parsed
 			desc = &required_args[required_args_idx];
 			required_args_idx += 1;
+
+			//
+			// flags are not allowed in argument descriptions so abort
+			if (desc->kind == CmdArgerDescKind_flag) {
+				const char* msg = colors
+					? "\x1b[91mcmd arger usage error:\x1b[0m cannot have a flag as a required argument"
+					: "cmd arger usage error: cannot have a flag as a required argument";
+				puts(msg);
+				abort();
+			}
 		}
 
 		//
-		// assign the values
+		// assign the values back out.
 		switch (desc->kind) {
 			case CmdArgerDescKind_flag:
 				*(CmdArgerBool*)desc->value_out = cmd_arger_true;
@@ -91,19 +113,47 @@ void cmd_arger_parse(CmdArgerDesc* optional_args, uint32_t optional_args_count, 
 			case CmdArgerDescKind_string:
 			case CmdArgerDescKind_integer: {
 				if (is_optional_arg) {
-					// move off the argument name to get the value
+					//
+					// we parsed the optional argument name earlier.
+					// so move off the optional argument name to get the value
 					arg_idx += 1;
 					if (arg_idx >= argc) {
-						printf("error: argument '%s' must have a value\n\n", desc->name);
+						const char* fmt = colors
+							? "\x1b[91merror:\x1b[0m argument '%s' must have a value\n\n"
+							: "error: argument '%s' must have a value\n\n";
+						printf(fmt, desc->name);
 						goto PRINT_HELP;
 					}
 					name_or_value = argv[arg_idx];
+					name_or_value_len = strlen(name_or_value);
 				}
 
 				if (desc->kind == CmdArgerDescKind_string) {
 					*(char**)desc->value_out = name_or_value;
 				} else {
-					*(int64_t*)desc->value_out = strtol(name_or_value, NULL, 10);
+					char* end_ptr = NULL;
+					long v = strtol(name_or_value, &end_ptr, 10);
+					if ((v == LONG_MIN || v == LONG_MAX) && errno == ERANGE) {
+						//
+						// overflow
+						char* prefix = is_optional_arg ? "--" : "";
+						const char* fmt = colors
+							? "\x1b[91merror:\x1b[0m argument '%s%s' has overflowed a 64-bit signed integer for it's value '%s'\n\n"
+							: "error: argument '%s%s' has overflowed a 64-bit signed integer for it's value '%s'\n\n";
+						printf(fmt, prefix, desc->name, name_or_value);
+						goto PRINT_HELP;
+					} else if (end_ptr - name_or_value != name_or_value_len) {
+						//
+						// not an integer
+						char* prefix = is_optional_arg ? "--" : "";
+						const char* fmt = colors
+							? "\x1b[91merror:\x1b[0m argument '%s%s' expected an integer value but got '%s'\n\n"
+							: "error: argument '%s%s' expected an integer value but got '%s'\n\n";
+
+						printf(fmt, prefix, desc->name, name_or_value);
+						goto PRINT_HELP;
+					}
+					*(int64_t*)desc->value_out = v;
 				}
 				break;
 			};
@@ -112,18 +162,36 @@ void cmd_arger_parse(CmdArgerDesc* optional_args, uint32_t optional_args_count, 
 		arg_idx += 1;
 	}
 
+	//
+	// make sure we have all the required arguments
+	if (required_args_idx < required_args_count) {
+		const char* fmt = colors
+			? "\x1b[91merror:\x1b[0m expected %u required arguments but got %u\n\n"
+			: "error: expected %u required arguments but got %u\n\n";
+		printf(fmt, required_args_count, required_args_idx);
+		goto PRINT_HELP;
+	}
+
+	//
+	// success, so lets return
 	return;
-PRINT_HELP_REQUIRED_ARGS:
-	printf("\e[91merror:\e[0m expected atleast %u required arguments\n\n", required_args_count);
+
 PRINT_HELP:
-	cmd_arger_show_help_and_exit(optional_args, optional_args_count, required_args, required_args_count, argv[0], app_name_and_version);
+	cmd_arger_show_help_and_exit(optional_args, optional_args_count, required_args, required_args_count, argv[0], app_name_and_version, colors);
 }
 
-_Noreturn void cmd_arger_show_help_and_exit(CmdArgerDesc* optional_args, uint32_t optional_args_count, CmdArgerDesc* required_args, uint32_t required_args_count, char* exe_name, char* app_name_and_version) {
-	printf("\e[97m------ %s help ------\e[0m\n", app_name_and_version);
+noreturn void cmd_arger_show_help_and_exit(CmdArgerDesc* optional_args, uint32_t optional_args_count, CmdArgerDesc* required_args, uint32_t required_args_count, char* exe_name, char* app_name_and_version, CmdArgerBool colors) {
+	const char* fmt = colors
+		? "\x1b[1m------ %s help ------\n\x1b[0m"
+		: "------ %s help ------\n";
+	printf(fmt, app_name_and_version);
+
 	//
 	// print usage line
-	printf("\e[92musage:\e[0m %s", exe_name);
+	fmt = colors
+		? "\x1b[1musage:\x1b[0m %s"
+		: "usage: %s";
+	printf(fmt, exe_name);
 	if (optional_args_count > 0) {
 		printf(" [OPTIONAL_ARGS...]");
 	}
@@ -135,19 +203,33 @@ _Noreturn void cmd_arger_show_help_and_exit(CmdArgerDesc* optional_args, uint32_
 
 	//
 	// print required args help
+	if (required_args_count)
+		putchar('\n');
+
+	fmt = colors
+		? "\t\x1b[91m%s\x1b[0m: %s\n"
+		: "\t%s: %s\n";
 	for (int i = 0; i < required_args_count; i += 1) {
 		CmdArgerDesc* arg = &required_args[i];
-		printf("\t%s: %s\n", arg->name, arg->info);
+		printf(fmt, arg->name, arg->info);
 	}
 
 	//
 	// print optional args help
-	puts("OPTIONAL_ARGS:");
-	puts("\t--help: this help screen");
+	puts("\nOPTIONAL_ARGS:");
+	fmt = colors
+		? "\t\x1b[93m--help\x1b[0m: this help screen"
+		: "\t--help: this help screen";
+	puts(fmt);
+
+	fmt = colors
+		? "\t\x1b[93m--%s\x1b[0m: %s\n"
+		: "\t--%s: %s\n";
 	for (int i = 0; i < optional_args_count; i += 1) {
 		CmdArgerDesc* arg = &optional_args[i];
-		printf("\t--%s: %s\n", arg->name, arg->info);
+		printf(fmt, arg->name, arg->info);
 	}
 
 	exit(1);
 }
+
