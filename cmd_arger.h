@@ -9,7 +9,7 @@
 // - no dependancies other than libc.
 // - linux & windows support.
 // - C99 compatible.
-// - parse boolean, integers and strings with error checking.
+// - parse boolean, integers, floats and strings with error checking.
 // - auto generates a help message when parsing fails and can be invoked manually with --help
 // - unix style optional arguments
 // - optional arguments are allowed to be before, after and inbetween required arguments.
@@ -79,6 +79,7 @@ int main(int argc, char** argv) {
 #include <stdint.h>
 #include <errno.h>
 #include <limits.h>
+#include <math.h>
 
 #ifndef noreturn
 #define noreturn _Noreturn
@@ -92,6 +93,7 @@ typedef enum {
 	CmdArgerDescKind_flag,
 	CmdArgerDescKind_string,
 	CmdArgerDescKind_integer,
+	CmdArgerDescKind_float,
 } CmdArgerDescKind;
 
 typedef struct {
@@ -124,6 +126,7 @@ typedef struct {
 extern CmdArgerDesc cmd_arger_desc_flag(CmdArgerBool* value_out, char* name, char* info);
 extern CmdArgerDesc cmd_arger_desc_string(char** value_out, char* name, char* info);
 extern CmdArgerDesc cmd_arger_desc_integer(int64_t* value_out, char* name, char* info);
+extern CmdArgerDesc cmd_arger_desc_float(double* value_out, char* name, char* info);
 
 //
 // parses the command line arguments by using the argument descriptions passed into the function.

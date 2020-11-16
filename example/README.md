@@ -33,21 +33,21 @@ Now test out the example with and see the results.
 
 Unix:
 ```
-./example string_value 88
+./example string_value 88 5.67
 ```
 Windows:
 ```
-example.exe string_value 88
+example.exe string_value 88 5.67
 ```
 
 Now test out the example with some optional arguments and see the results
 
 Unix:
 ```
-./example --flag --string "overwritten value" string_value 88 --integer 2048
+./example --flag --string "overwritten value" string_value 88 --integer 2048 5.67
 ```
 Windows:
 ```
-example.exe --flag --string "overwritten value" string_value 88 --integer 2048
+example.exe --flag --string "overwritten value" string_value 88 --integer 2048 5.67
 ```
 

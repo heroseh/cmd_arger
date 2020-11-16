@@ -7,19 +7,23 @@ int main(int argc, char** argv) {
 	CmdArgerBool flag = cmd_arger_false;
 	char* string = "default value";
 	int64_t integer = 1024;
+	double float_ = 3.14;
 	CmdArgerDesc optional_arg_descs[] = {
 		cmd_arger_desc_flag(&flag, "flag", "a boolean value"),
 		cmd_arger_desc_string(&string, "string", "a string value"),
 		cmd_arger_desc_integer(&integer, "integer", "a 64 bit signed integer value"),
+		cmd_arger_desc_float(&float_, "float", "a 64 bit floating point value"),
 	};
 
 	//
 	// these are the required arguments, they guaranteed to be initalized with a value after cmd_arger_parse
 	char* required_string = NULL;
 	int64_t required_integer = 0;
+	double required_float = 0.0;
 	CmdArgerDesc required_arg_descs[] = {
 		cmd_arger_desc_string(&required_string, "string", "a string value"),
 		cmd_arger_desc_integer(&required_integer, "integer", "a 64 bit signed integer value"),
+		cmd_arger_desc_float(&required_float, "float", "a 64 bit floating point value"),
 	};
 
 	//
@@ -43,19 +47,23 @@ int main(int argc, char** argv) {
 		"flag = %s\n"
 		"string = %s\n"
 		"integer = %zd\n"
+		"float = %f\n"
 		"\n",
 		flag ? "true" : "false",
 		string,
-		integer
+		integer,
+		float_
 	);
 
 	printf(
 		"required argument values:\n"
 		"string = %s\n"
 		"integer = %zd\n"
+		"float = %f\n"
 		"\n",
 		required_string,
-		required_integer
+		required_integer,
+		required_float
 	);
 
 	return 0;

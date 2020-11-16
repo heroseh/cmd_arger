@@ -26,6 +26,15 @@ CmdArgerDesc cmd_arger_desc_integer(int64_t* value_out, char* name, char* info) 
 	};
 }
 
+CmdArgerDesc cmd_arger_desc_float(double* value_out, char* name, char* info) {
+	return (CmdArgerDesc) {
+		.name = name,
+		.info = info,
+		.value_out = value_out,
+		.kind = CmdArgerDescKind_float,
+	};
+}
+
 void cmd_arger_parse(CmdArgerDesc* optional_args, uint32_t optional_args_count, CmdArgerDesc* required_args, uint32_t required_args_count, int argc, char** argv, char* app_name_and_version, CmdArgerBool colors) {
 	// argument index 0 (the first argument) is the name of the program.
 	// so we are going to start after that.
@@ -111,7 +120,8 @@ void cmd_arger_parse(CmdArgerDesc* optional_args, uint32_t optional_args_count, 
 				*(CmdArgerBool*)desc->value_out = cmd_arger_true;
 				break;
 			case CmdArgerDescKind_string:
-			case CmdArgerDescKind_integer: {
+			case CmdArgerDescKind_integer:
+			case CmdArgerDescKind_float: {
 				if (is_optional_arg) {
 					//
 					// we parsed the optional argument name earlier.
@@ -130,7 +140,7 @@ void cmd_arger_parse(CmdArgerDesc* optional_args, uint32_t optional_args_count, 
 
 				if (desc->kind == CmdArgerDescKind_string) {
 					*(char**)desc->value_out = name_or_value;
-				} else {
+				} else if (desc->kind == CmdArgerDescKind_integer) {
 					char* end_ptr = NULL;
 					long v = strtol(name_or_value, &end_ptr, 10);
 					if ((v == LONG_MIN || v == LONG_MAX) && errno == ERANGE) {
@@ -154,6 +164,30 @@ void cmd_arger_parse(CmdArgerDesc* optional_args, uint32_t optional_args_count, 
 						goto PRINT_HELP;
 					}
 					*(int64_t*)desc->value_out = v;
+				} else {
+					char* end_ptr = NULL;
+					double v = strtod(name_or_value, &end_ptr);
+					if ((v == -HUGE_VAL || v == HUGE_VAL) && errno == ERANGE) {
+						//
+						// overflow
+						char* prefix = is_optional_arg ? "--" : "";
+						const char* fmt = colors
+							? "\x1b[91merror:\x1b[0m argument '%s%s' has overflowed a 64-bit floating point for it's value '%s'\n\n"
+							: "error: argument '%s%s' has overflowed a 64-bit floating point for it's value '%s'\n\n";
+						printf(fmt, prefix, desc->name, name_or_value);
+						goto PRINT_HELP;
+					} else if (end_ptr - name_or_value != name_or_value_len) {
+						//
+						// not a float
+						char* prefix = is_optional_arg ? "--" : "";
+						const char* fmt = colors
+							? "\x1b[91merror:\x1b[0m argument '%s%s' expected an floating point value but got '%s'\n\n"
+							: "error: argument '%s%s' expected an floating point value but got '%s'\n\n";
+
+						printf(fmt, prefix, desc->name, name_or_value);
+						goto PRINT_HELP;
+					}
+					*(double*)desc->value_out = v;
 				}
 				break;
 			};
