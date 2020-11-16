@@ -94,12 +94,21 @@ typedef enum {
 	CmdArgerDescKind_string,
 	CmdArgerDescKind_integer,
 	CmdArgerDescKind_float,
+	CmdArgerDescKind_enum,
 } CmdArgerDescKind;
 
 typedef struct {
 	char* name;
 	char* info;
+	int64_t value;
+} CmdArgerEnumDesc;
+
+typedef struct {
+	char* name;
+	char* info;
 	void* value_out;
+	CmdArgerEnumDesc* enum_descs;
+	uint32_t enum_descs_count;
 	CmdArgerDescKind kind;
 } CmdArgerDesc;
 
@@ -121,12 +130,17 @@ typedef struct {
 //     information about the argument, like what it is used for.
 //     this is what is displayed in the help message along side the argument.
 //
+// @param enum_descs: a pointer to an array of enum descriptions
+//
+// @param enum_descs_count: the number of elements in the array pointed to by @param(enum_descs)
+//
 // @return: the initialized CmdArgerDesc that is ready to be passed into cmd_arger_parse.
 //
 extern CmdArgerDesc cmd_arger_desc_flag(CmdArgerBool* value_out, char* name, char* info);
 extern CmdArgerDesc cmd_arger_desc_string(char** value_out, char* name, char* info);
 extern CmdArgerDesc cmd_arger_desc_integer(int64_t* value_out, char* name, char* info);
 extern CmdArgerDesc cmd_arger_desc_float(double* value_out, char* name, char* info);
+extern CmdArgerDesc cmd_arger_desc_enum(int64_t* value_out, char* name, char* info, CmdArgerEnumDesc* enum_descs, uint32_t enum_descs_count);
 
 //
 // parses the command line arguments by using the argument descriptions passed into the function.

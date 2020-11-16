@@ -1,6 +1,40 @@
 #include "../cmd_arger.h"
 #include "../cmd_arger.c"
 
+//
+// a crazy example of a very spread enum.
+enum {
+	DOG = 27,
+	RABBIT = 48,
+	MOUSE = 22,
+	HAMSTER = -100,
+};
+
+//
+// the metadata used to describe the enumeration above.
+static CmdArgerEnumDesc animal_descs[] = {
+	{
+		.name = "dog",
+		.info = "selects the dog, they go BARK",
+		.value = DOG,
+	},
+	{
+		.name = "rabbit",
+		.info = "selects the rabbit",
+		.value = RABBIT,
+	},
+	{
+		.name = "mouse",
+		.info = "selects the mouse, they go SQUEEK",
+		.value = MOUSE,
+	},
+	{
+		.name = "hamster",
+		.info = "selects the hamster",
+		.value = HAMSTER,
+	},
+};
+
 int main(int argc, char** argv) {
 	//
 	// these are the optional arguments, so you need to provide them with a default value.
@@ -8,11 +42,13 @@ int main(int argc, char** argv) {
 	char* string = "default value";
 	int64_t integer = 1024;
 	double float_ = 3.14;
+	int64_t enum_ = MOUSE;
 	CmdArgerDesc optional_arg_descs[] = {
 		cmd_arger_desc_flag(&flag, "flag", "a boolean value"),
 		cmd_arger_desc_string(&string, "string", "a string value"),
 		cmd_arger_desc_integer(&integer, "integer", "a 64 bit signed integer value"),
 		cmd_arger_desc_float(&float_, "float", "a 64 bit floating point value"),
+		cmd_arger_desc_enum(&enum_, "animal", "selects an animal enumeration", animal_descs, sizeof(animal_descs) / sizeof(*animal_descs)),
 	};
 
 	//
@@ -20,6 +56,7 @@ int main(int argc, char** argv) {
 	char* required_string = NULL;
 	int64_t required_integer = 0;
 	double required_float = 0.0;
+	int64_t required_enum = 0;
 	CmdArgerDesc required_arg_descs[] = {
 		cmd_arger_desc_string(&required_string, "string", "a string value"),
 		cmd_arger_desc_integer(&required_integer, "integer", "a 64 bit signed integer value"),
@@ -48,11 +85,13 @@ int main(int argc, char** argv) {
 		"string = %s\n"
 		"integer = %zd\n"
 		"float = %f\n"
+		"enum = %zd\n"
 		"\n",
 		flag ? "true" : "false",
 		string,
 		integer,
-		float_
+		float_,
+		enum_
 	);
 
 	printf(
