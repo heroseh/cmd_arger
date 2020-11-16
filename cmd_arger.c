@@ -261,7 +261,7 @@ void _cmd_arger_print_help_enum_values(CmdArgerDesc* desc) {
 	}
 }
 
-noreturn void cmd_arger_show_help_and_exit(CmdArgerDesc* optional_args, uint32_t optional_args_count, CmdArgerDesc* required_args, uint32_t required_args_count, char* exe_name, char* app_name_and_version, CmdArgerBool colors) {
+void cmd_arger_show_help_and_exit(CmdArgerDesc* optional_args, uint32_t optional_args_count, CmdArgerDesc* required_args, uint32_t required_args_count, char* exe_name, char* app_name_and_version, CmdArgerBool colors) {
 	const char* fmt = colors
 		? "\x1b[1m------ %s help ------\n\x1b[0m"
 		: "------ %s help ------\n";

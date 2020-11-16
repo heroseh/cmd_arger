@@ -81,10 +81,6 @@ int main(int argc, char** argv) {
 #include <limits.h>
 #include <math.h>
 
-#ifndef noreturn
-#define noreturn _Noreturn
-#endif
-
 typedef uint8_t CmdArgerBool;
 #define cmd_arger_true 1
 #define cmd_arger_false 0
@@ -185,7 +181,7 @@ extern void cmd_arger_parse(CmdArgerDesc* optional_args, uint32_t optional_args_
 //
 // @param app_name_and_version: a string used to identify the program. this is used in the help message.
 //
-extern noreturn void cmd_arger_show_help_and_exit(CmdArgerDesc* optional_args, uint32_t optional_args_count, CmdArgerDesc* required_args, uint32_t required_args_count, char* exe_name, char* app_name_and_version, CmdArgerBool colors);
+extern void cmd_arger_show_help_and_exit(CmdArgerDesc* optional_args, uint32_t optional_args_count, CmdArgerDesc* required_args, uint32_t required_args_count, char* exe_name, char* app_name_and_version, CmdArgerBool colors);
 
 #endif
 
