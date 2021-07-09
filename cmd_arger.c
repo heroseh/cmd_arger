@@ -51,7 +51,7 @@ void cmd_arger_parse(CmdArgerDesc* optional_args, uint32_t optional_args_count, 
 	// so we are going to start after that.
 	int arg_idx = 1;
 
-	int required_args_idx = 0;
+	uint32_t required_args_idx = 0;
 
 	//
 	// iterate over the arguments and parse them one by one.
@@ -76,7 +76,7 @@ void cmd_arger_parse(CmdArgerDesc* optional_args, uint32_t optional_args_count, 
 
 			//
 			// locate the argument description that matches this name
-			for (int i = 0; i < optional_args_count; i += 1) {
+			for (uint32_t i = 0; i < optional_args_count; i += 1) {
 				CmdArgerDesc* arg = &optional_args[i];
 				if (strcmp(arg->name, name_or_value) == 0) {
 					desc = arg;
@@ -276,7 +276,7 @@ void cmd_arger_show_help_and_exit(CmdArgerDesc* optional_args, uint32_t optional
 	if (optional_args_count > 0) {
 		printf(" [OPTIONAL_ARGS...]");
 	}
-	for (int i = 0; i < required_args_count; i += 1) {
+	for (uint32_t i = 0; i < required_args_count; i += 1) {
 		CmdArgerDesc* arg = &required_args[i];
 		printf(" %s", arg->name);
 	}
@@ -290,7 +290,7 @@ void cmd_arger_show_help_and_exit(CmdArgerDesc* optional_args, uint32_t optional
 	fmt = colors
 		? "\t\x1b[91m%s\x1b[0m: %s\n"
 		: "\t%s: %s\n";
-	for (int i = 0; i < required_args_count; i += 1) {
+	for (uint32_t i = 0; i < required_args_count; i += 1) {
 		CmdArgerDesc* arg = &required_args[i];
 		printf(fmt, arg->name, arg->info);
 		if (arg->kind == CmdArgerDescKind_enum)
@@ -308,7 +308,7 @@ void cmd_arger_show_help_and_exit(CmdArgerDesc* optional_args, uint32_t optional
 	fmt = colors
 		? "\t\x1b[93m--%s\x1b[0m: %s\n"
 		: "\t--%s: %s\n";
-	for (int i = 0; i < optional_args_count; i += 1) {
+	for (uint32_t i = 0; i < optional_args_count; i += 1) {
 		CmdArgerDesc* arg = &optional_args[i];
 		printf(fmt, arg->name, arg->info);
 		if (arg->kind == CmdArgerDescKind_enum)
