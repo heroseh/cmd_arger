@@ -94,14 +94,14 @@ typedef enum {
 } CmdArgerDescKind;
 
 typedef struct {
-	char* name;
-	char* info;
+	const char* name;
+	const char* info;
 	int64_t value;
 } CmdArgerEnumDesc;
 
 typedef struct {
-	char* name;
-	char* info;
+	const char* name;
+	const char* info;
 	void* value_out;
 	CmdArgerEnumDesc* enum_descs;
 	uint32_t enum_descs_count;
@@ -132,11 +132,11 @@ typedef struct {
 //
 // @return: the initialized CmdArgerDesc that is ready to be passed into cmd_arger_parse.
 //
-extern CmdArgerDesc cmd_arger_desc_flag(CmdArgerBool* value_out, char* name, char* info);
-extern CmdArgerDesc cmd_arger_desc_string(char** value_out, char* name, char* info);
-extern CmdArgerDesc cmd_arger_desc_integer(int64_t* value_out, char* name, char* info);
-extern CmdArgerDesc cmd_arger_desc_float(double* value_out, char* name, char* info);
-extern CmdArgerDesc cmd_arger_desc_enum(int64_t* value_out, char* name, char* info, CmdArgerEnumDesc* enum_descs, uint32_t enum_descs_count);
+extern CmdArgerDesc cmd_arger_desc_flag(CmdArgerBool* value_out, const char* name, const char* info);
+extern CmdArgerDesc cmd_arger_desc_string(char** value_out, const char* name, const char* info);
+extern CmdArgerDesc cmd_arger_desc_integer(int64_t* value_out, const char* name, const char* info);
+extern CmdArgerDesc cmd_arger_desc_float(double* value_out, const char* name, const char* info);
+extern CmdArgerDesc cmd_arger_desc_enum(int64_t* value_out, const char* name, const char* info, CmdArgerEnumDesc* enum_descs, uint32_t enum_descs_count);
 
 //
 // parses the command line arguments by using the argument descriptions passed into the function.
@@ -164,7 +164,7 @@ extern CmdArgerDesc cmd_arger_desc_enum(int64_t* value_out, char* name, char* in
 //
 // @param app_name_and_version: a string used to identify the program. this is used in the help message.
 //
-extern void cmd_arger_parse(CmdArgerDesc* optional_args, uint32_t optional_args_count, CmdArgerDesc* required_args, uint32_t required_args_count, int argc, char** argv, char* app_name_and_version, CmdArgerBool colors);
+extern void cmd_arger_parse(CmdArgerDesc* optional_args, uint32_t optional_args_count, CmdArgerDesc* required_args, uint32_t required_args_count, int argc, char** argv, const char* app_name_and_version, CmdArgerBool colors);
 
 //
 // prints out the help message and terminates the program. this is automatically called when cmd_arger_parse fails.
@@ -181,7 +181,7 @@ extern void cmd_arger_parse(CmdArgerDesc* optional_args, uint32_t optional_args_
 //
 // @param app_name_and_version: a string used to identify the program. this is used in the help message.
 //
-extern void cmd_arger_show_help_and_exit(CmdArgerDesc* optional_args, uint32_t optional_args_count, CmdArgerDesc* required_args, uint32_t required_args_count, char* exe_name, char* app_name_and_version, CmdArgerBool colors);
+extern void cmd_arger_show_help_and_exit(CmdArgerDesc* optional_args, uint32_t optional_args_count, CmdArgerDesc* required_args, uint32_t required_args_count, const char* exe_name, const char* app_name_and_version, CmdArgerBool colors);
 
 #endif
 
