@@ -69,8 +69,7 @@ void cmd_arger_parse(CmdArgerDesc* optional_args, uint32_t optional_args_count, 
 
 			//
 			// if we find --help, then just ignore everything, print the help message and exist the program
-			static char help_name[] = "help";
-			if (name_or_value_len == 4 && memcmp(name_or_value, help_name, sizeof(help_name)) == 0) {
+			if (name_or_value_len == 4 && memcmp(name_or_value, "help", sizeof("help")) == 0) {
 				goto PRINT_HELP;
 			}
 
