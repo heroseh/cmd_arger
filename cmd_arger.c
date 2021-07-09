@@ -1,5 +1,5 @@
 
-CmdArgerDesc cmd_arger_desc_flag(CmdArgerBool* value_out, char* name, char* info) {
+CmdArgerDesc cmd_arger_desc_flag(CmdArgerBool* value_out, const char* name, const char* info) {
 	return (CmdArgerDesc) {
 		.name = name,
 		.info = info,
@@ -8,7 +8,7 @@ CmdArgerDesc cmd_arger_desc_flag(CmdArgerBool* value_out, char* name, char* info
 	};
 }
 
-CmdArgerDesc cmd_arger_desc_string(char** value_out, char* name, char* info) {
+CmdArgerDesc cmd_arger_desc_string(char** value_out, const char* name, const char* info) {
 	return (CmdArgerDesc) {
 		.name = name,
 		.info = info,
@@ -17,7 +17,7 @@ CmdArgerDesc cmd_arger_desc_string(char** value_out, char* name, char* info) {
 	};
 }
 
-CmdArgerDesc cmd_arger_desc_integer(int64_t* value_out, char* name, char* info) {
+CmdArgerDesc cmd_arger_desc_integer(int64_t* value_out, const char* name, const char* info) {
 	return (CmdArgerDesc) {
 		.name = name,
 		.info = info,
@@ -26,7 +26,7 @@ CmdArgerDesc cmd_arger_desc_integer(int64_t* value_out, char* name, char* info) 
 	};
 }
 
-CmdArgerDesc cmd_arger_desc_float(double* value_out, char* name, char* info) {
+CmdArgerDesc cmd_arger_desc_float(double* value_out, const char* name, const char* info) {
 	return (CmdArgerDesc) {
 		.name = name,
 		.info = info,
@@ -35,7 +35,7 @@ CmdArgerDesc cmd_arger_desc_float(double* value_out, char* name, char* info) {
 	};
 }
 
-CmdArgerDesc cmd_arger_desc_enum(int64_t* value_out, char* name, char* info, CmdArgerEnumDesc* enum_descs, uint32_t enum_descs_count) {
+CmdArgerDesc cmd_arger_desc_enum(int64_t* value_out, const char* name, const char* info, CmdArgerEnumDesc* enum_descs, uint32_t enum_descs_count) {
 	return (CmdArgerDesc) {
 		.name = name,
 		.info = info,
@@ -46,7 +46,7 @@ CmdArgerDesc cmd_arger_desc_enum(int64_t* value_out, char* name, char* info, Cmd
 	};
 }
 
-void cmd_arger_parse(CmdArgerDesc* optional_args, uint32_t optional_args_count, CmdArgerDesc* required_args, uint32_t required_args_count, int argc, char** argv, char* app_name_and_version, CmdArgerBool colors) {
+void cmd_arger_parse(CmdArgerDesc* optional_args, uint32_t optional_args_count, CmdArgerDesc* required_args, uint32_t required_args_count, int argc, char** argv, const char* app_name_and_version, CmdArgerBool colors) {
 	// argument index 0 (the first argument) is the name of the program.
 	// so we are going to start after that.
 	int arg_idx = 1;
@@ -261,7 +261,7 @@ void _cmd_arger_print_help_enum_values(CmdArgerDesc* desc) {
 	}
 }
 
-void cmd_arger_show_help_and_exit(CmdArgerDesc* optional_args, uint32_t optional_args_count, CmdArgerDesc* required_args, uint32_t required_args_count, char* exe_name, char* app_name_and_version, CmdArgerBool colors) {
+void cmd_arger_show_help_and_exit(CmdArgerDesc* optional_args, uint32_t optional_args_count, CmdArgerDesc* required_args, uint32_t required_args_count, const char* exe_name, const char* app_name_and_version, CmdArgerBool colors) {
 	const char* fmt = colors
 		? "\x1b[1m------ %s help ------\n\x1b[0m"
 		: "------ %s help ------\n";
