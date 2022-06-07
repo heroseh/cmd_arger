@@ -266,6 +266,19 @@ void cmd_arger_show_help_and_exit(CmdArgerDesc* optional_args, uint32_t optional
 		: "------ %s help ------\n";
 	printf(fmt, app_name_and_version);
 
+    int opt_pad = 0, req_pad = 0;
+	for (uint32_t i = 0; i < required_args_count; i += 1) {
+        int arg_len = strlen(required_args[i].name);
+        if (arg_len > req_pad)
+        {   req_pad = arg_len;   }
+    }
+	for (uint32_t i = 0; i < optional_args_count; i += 1) {
+        int arg_len = strlen(optional_args[i].name);
+        if (arg_len > opt_pad)
+        {   opt_pad = arg_len;   }
+    }
+
+
 	//
 	// print usage line
 	fmt = colors
@@ -287,11 +300,11 @@ void cmd_arger_show_help_and_exit(CmdArgerDesc* optional_args, uint32_t optional
 		putchar('\n');
 
 	fmt = colors
-		? "\t\x1b[91m%s\x1b[0m: %s\n"
-		: "\t%s: %s\n";
+		? "\t\x1b[91m%-*s\x1b[0m : %s\n"
+		: "\t%-*s : %s\n";
 	for (uint32_t i = 0; i < required_args_count; i += 1) {
 		CmdArgerDesc* arg = &required_args[i];
-		printf(fmt, arg->name, arg->info);
+		printf(fmt, req_pad, arg->name, arg->info);
 		if (arg->kind == CmdArgerDescKind_enum)
 			_cmd_arger_print_help_enum_values(arg);
 	}
@@ -300,16 +313,16 @@ void cmd_arger_show_help_and_exit(CmdArgerDesc* optional_args, uint32_t optional
 	// print optional args help
 	puts("\nOPTIONAL_ARGS:");
 	fmt = colors
-		? "\t\x1b[93m--help\x1b[0m: this help screen"
-		: "\t--help: this help screen";
-	puts(fmt);
+		? "\t\x1b[93m--%-*s\x1b[0m : this help screen\n"
+		: "\t--%-*s : this help screen\n";
+	printf(fmt, opt_pad, "help");
 
 	fmt = colors
-		? "\t\x1b[93m--%s\x1b[0m: %s\n"
-		: "\t--%s: %s\n";
+		? "\t\x1b[93m--%-*s\x1b[0m : %s\n"
+		: "\t--%-*s : %s\n";
 	for (uint32_t i = 0; i < optional_args_count; i += 1) {
 		CmdArgerDesc* arg = &optional_args[i];
-		printf(fmt, arg->name, arg->info);
+		printf(fmt, opt_pad, arg->name, arg->info);
 		if (arg->kind == CmdArgerDescKind_enum)
 			_cmd_arger_print_help_enum_values(arg);
 	}
