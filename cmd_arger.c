@@ -1,5 +1,5 @@
 
-CmdArgerDesc cmd_arger_desc_flag(CmdArgerBool* value_out, char* name, char* info) {
+CmdArgerDesc cmd_arger_desc_flag(CmdArgerBool* value_out, const char* name, const char* info) {
 	return (CmdArgerDesc) {
 		.name = name,
 		.info = info,
@@ -8,7 +8,7 @@ CmdArgerDesc cmd_arger_desc_flag(CmdArgerBool* value_out, char* name, char* info
 	};
 }
 
-CmdArgerDesc cmd_arger_desc_string(char** value_out, char* name, char* info) {
+CmdArgerDesc cmd_arger_desc_string(char** value_out, const char* name, const char* info) {
 	return (CmdArgerDesc) {
 		.name = name,
 		.info = info,
@@ -17,7 +17,7 @@ CmdArgerDesc cmd_arger_desc_string(char** value_out, char* name, char* info) {
 	};
 }
 
-CmdArgerDesc cmd_arger_desc_integer(int64_t* value_out, char* name, char* info) {
+CmdArgerDesc cmd_arger_desc_integer(int64_t* value_out, const char* name, const char* info) {
 	return (CmdArgerDesc) {
 		.name = name,
 		.info = info,
@@ -26,7 +26,7 @@ CmdArgerDesc cmd_arger_desc_integer(int64_t* value_out, char* name, char* info) 
 	};
 }
 
-CmdArgerDesc cmd_arger_desc_float(double* value_out, char* name, char* info) {
+CmdArgerDesc cmd_arger_desc_float(double* value_out, const char* name, const char* info) {
 	return (CmdArgerDesc) {
 		.name = name,
 		.info = info,
@@ -35,7 +35,7 @@ CmdArgerDesc cmd_arger_desc_float(double* value_out, char* name, char* info) {
 	};
 }
 
-CmdArgerDesc cmd_arger_desc_enum(int64_t* value_out, char* name, char* info, CmdArgerEnumDesc* enum_descs, uint32_t enum_descs_count) {
+CmdArgerDesc cmd_arger_desc_enum(int64_t* value_out, const char* name, const char* info, CmdArgerEnumDesc* enum_descs, uint32_t enum_descs_count) {
 	return (CmdArgerDesc) {
 		.name = name,
 		.info = info,
@@ -46,12 +46,12 @@ CmdArgerDesc cmd_arger_desc_enum(int64_t* value_out, char* name, char* info, Cmd
 	};
 }
 
-void cmd_arger_parse(CmdArgerDesc* optional_args, uint32_t optional_args_count, CmdArgerDesc* required_args, uint32_t required_args_count, int argc, char** argv, char* app_name_and_version, CmdArgerBool colors) {
+void cmd_arger_parse(CmdArgerDesc* optional_args, uint32_t optional_args_count, CmdArgerDesc* required_args, uint32_t required_args_count, int argc, char** argv, const char* app_name_and_version, CmdArgerBool colors) {
 	// argument index 0 (the first argument) is the name of the program.
 	// so we are going to start after that.
 	int arg_idx = 1;
 
-	int required_args_idx = 0;
+	uint32_t required_args_idx = 0;
 
 	//
 	// iterate over the arguments and parse them one by one.
@@ -69,14 +69,13 @@ void cmd_arger_parse(CmdArgerDesc* optional_args, uint32_t optional_args_count, 
 
 			//
 			// if we find --help, then just ignore everything, print the help message and exist the program
-			static char help_name[] = "help";
-			if (name_or_value_len == 4 && memcmp(name_or_value, help_name, sizeof(help_name)) == 0) {
+			if (name_or_value_len == 4 && memcmp(name_or_value, "help", sizeof("help")) == 0) {
 				goto PRINT_HELP;
 			}
 
 			//
 			// locate the argument description that matches this name
-			for (int i = 0; i < optional_args_count; i += 1) {
+			for (uint32_t i = 0; i < optional_args_count; i += 1) {
 				CmdArgerDesc* arg = &optional_args[i];
 				if (strcmp(arg->name, name_or_value) == 0) {
 					desc = arg;
@@ -261,11 +260,24 @@ void _cmd_arger_print_help_enum_values(CmdArgerDesc* desc) {
 	}
 }
 
-void cmd_arger_show_help_and_exit(CmdArgerDesc* optional_args, uint32_t optional_args_count, CmdArgerDesc* required_args, uint32_t required_args_count, char* exe_name, char* app_name_and_version, CmdArgerBool colors) {
+void cmd_arger_show_help_and_exit(CmdArgerDesc* optional_args, uint32_t optional_args_count, CmdArgerDesc* required_args, uint32_t required_args_count, const char* exe_name, const char* app_name_and_version, CmdArgerBool colors) {
 	const char* fmt = colors
 		? "\x1b[1m------ %s help ------\n\x1b[0m"
 		: "------ %s help ------\n";
 	printf(fmt, app_name_and_version);
+
+    int opt_pad = 0, req_pad = 0;
+	for (uint32_t i = 0; i < required_args_count; i += 1) {
+        int arg_len = strlen(required_args[i].name);
+        if (arg_len > req_pad)
+        {   req_pad = arg_len;   }
+    }
+	for (uint32_t i = 0; i < optional_args_count; i += 1) {
+        int arg_len = strlen(optional_args[i].name);
+        if (arg_len > opt_pad)
+        {   opt_pad = arg_len;   }
+    }
+
 
 	//
 	// print usage line
@@ -276,7 +288,7 @@ void cmd_arger_show_help_and_exit(CmdArgerDesc* optional_args, uint32_t optional
 	if (optional_args_count > 0) {
 		printf(" [OPTIONAL_ARGS...]");
 	}
-	for (int i = 0; i < required_args_count; i += 1) {
+	for (uint32_t i = 0; i < required_args_count; i += 1) {
 		CmdArgerDesc* arg = &required_args[i];
 		printf(" %s", arg->name);
 	}
@@ -288,11 +300,11 @@ void cmd_arger_show_help_and_exit(CmdArgerDesc* optional_args, uint32_t optional
 		putchar('\n');
 
 	fmt = colors
-		? "\t\x1b[91m%s\x1b[0m: %s\n"
-		: "\t%s: %s\n";
-	for (int i = 0; i < required_args_count; i += 1) {
+		? "\t\x1b[91m%-*s\x1b[0m : %s\n"
+		: "\t%-*s : %s\n";
+	for (uint32_t i = 0; i < required_args_count; i += 1) {
 		CmdArgerDesc* arg = &required_args[i];
-		printf(fmt, arg->name, arg->info);
+		printf(fmt, req_pad, arg->name, arg->info);
 		if (arg->kind == CmdArgerDescKind_enum)
 			_cmd_arger_print_help_enum_values(arg);
 	}
@@ -301,16 +313,16 @@ void cmd_arger_show_help_and_exit(CmdArgerDesc* optional_args, uint32_t optional
 	// print optional args help
 	puts("\nOPTIONAL_ARGS:");
 	fmt = colors
-		? "\t\x1b[93m--help\x1b[0m: this help screen"
-		: "\t--help: this help screen";
-	puts(fmt);
+		? "\t\x1b[93m--%-*s\x1b[0m : this help screen\n"
+		: "\t--%-*s : this help screen\n";
+	printf(fmt, opt_pad, "help");
 
 	fmt = colors
-		? "\t\x1b[93m--%s\x1b[0m: %s\n"
-		: "\t--%s: %s\n";
-	for (int i = 0; i < optional_args_count; i += 1) {
+		? "\t\x1b[93m--%-*s\x1b[0m : %s\n"
+		: "\t--%-*s : %s\n";
+	for (uint32_t i = 0; i < optional_args_count; i += 1) {
 		CmdArgerDesc* arg = &optional_args[i];
-		printf(fmt, arg->name, arg->info);
+		printf(fmt, opt_pad, arg->name, arg->info);
 		if (arg->kind == CmdArgerDescKind_enum)
 			_cmd_arger_print_help_enum_values(arg);
 	}
